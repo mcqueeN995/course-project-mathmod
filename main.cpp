@@ -284,6 +284,124 @@ int main() {
         }
 
         std::cout << "\n╔════════════════════════════════════════════════════╗" << std::endl;
+        std::cout << "║ ДЕМОНСТРАЦИЯ 9: Венгерский алгоритм                ║" << std::endl;
+        std::cout << "╚════════════════════════════════════════════════════╝" << std::endl;
+
+        try {
+            Graph assignmentGraph;
+
+            assignmentGraph.addVertex(Vertex(1, "Worker1", 1.0));
+            assignmentGraph.addVertex(Vertex(2, "Worker2", 1.0));
+            assignmentGraph.addVertex(Vertex(3, "Worker3", 1.0));
+            assignmentGraph.addVertex(Vertex(4, "Task1", 1.0));
+            assignmentGraph.addVertex(Vertex(5, "Task2", 1.0));
+            assignmentGraph.addVertex(Vertex(6, "Task3", 1.0));
+
+            assignmentGraph.addEdge(Edge(1, 4, 2.0, true));
+            assignmentGraph.addEdge(Edge(1, 5, 5.0, true));
+            assignmentGraph.addEdge(Edge(1, 6, 1.0, true));
+
+            assignmentGraph.addEdge(Edge(2, 4, 4.0, true));
+            assignmentGraph.addEdge(Edge(2, 5, 3.0, true));
+            assignmentGraph.addEdge(Edge(2, 6, 2.0, true));
+
+            assignmentGraph.addEdge(Edge(3, 4, 1.0, true));
+            assignmentGraph.addEdge(Edge(3, 5, 2.0, true));
+            assignmentGraph.addEdge(Edge(3, 6, 6.0, true));
+
+            std::cout << "\nГраф для задачи о назначениях:" << std::endl;
+            assignmentGraph.printGraph();
+
+            std::vector<int> workers = {1, 2, 3};
+            std::vector<int> tasks = {4, 5, 6};
+
+            std::cout << "Применение Венгерского алгоритма..." << std::endl;
+            auto [totalCost, matching] = assignmentGraph.solveAssignmentProblem(workers, tasks);
+
+            std::cout << "Минимальная стоимость: " << totalCost << std::endl;
+            std::cout << "Оптимальное назначение:" << std::endl;
+            for (const auto& pair : matching) {
+                std::cout << "  Работник " << pair.first << " -> Задание " << pair.second << std::endl;
+            }
+
+        } catch (const std::exception& e) {
+            std::cerr << "Ошибка: " << e.what() << std::endl;
+        }
+
+        std::cout << "\n╔════════════════════════════════════════════════════╗" << std::endl;
+        std::cout << "║ ДЕМОНСТРАЦИЯ 10: Наибольшее паросочетание          ║" << std::endl;
+        std::cout << "╚════════════════════════════════════════════════════╝" << std::endl;
+
+        try {
+            Graph matchingGraph;
+
+            matchingGraph.addVertex(Vertex(1, "A", 1.0));
+            matchingGraph.addVertex(Vertex(2, "B", 1.0));
+            matchingGraph.addVertex(Vertex(3, "C", 1.0));
+            matchingGraph.addVertex(Vertex(4, "D", 1.0));
+            matchingGraph.addVertex(Vertex(5, "E", 1.0));
+            matchingGraph.addVertex(Vertex(6, "F", 1.0));
+
+            matchingGraph.addEdge(Edge(1, 2, 1.0, false));
+            matchingGraph.addEdge(Edge(1, 3, 1.0, false));
+            matchingGraph.addEdge(Edge(2, 4, 1.0, false));
+            matchingGraph.addEdge(Edge(3, 5, 1.0, false));
+            matchingGraph.addEdge(Edge(4, 6, 1.0, false));
+            matchingGraph.addEdge(Edge(5, 6, 1.0, false));
+
+            std::cout << "\nГраф для поиска наибольшего паросочетания:" << std::endl;
+            matchingGraph.printGraph();
+
+            std::map<int, int> partition;
+            std::vector<std::pair<int, int>> maxMatching;
+
+            if (matchingGraph.isBipartite(partition)) {
+                std::cout << " Граф двудольный - используем быстрый алгоритм Куна" << std::endl;
+                maxMatching = matchingGraph.findMaximumMatchingBipartite();
+            } else {
+                std::cout << " Граф не двудольный - используем алгоритм Эдмондса" << std::endl;
+                maxMatching = matchingGraph.findMaximumMatching();
+            }
+
+            std::cout << "Наибольшее паросочетание (размер = " << maxMatching.size() << "):" << std::endl;
+            for (const auto& edge : maxMatching) {
+                std::cout << "  " << edge.first << " -- " << edge.second << std::endl;
+            }
+
+
+            std::cout << "\n--- Тест с недвудольным графом ---" << std::endl;
+            Graph nonBipartiteGraph;
+
+            for (int i = 1; i <= 5; i++) {
+                nonBipartiteGraph.addVertex(Vertex(i, "V" + std::to_string(i), 1.0));
+            }
+
+            nonBipartiteGraph.addEdge(Edge(1, 2, 1.0, false));
+            nonBipartiteGraph.addEdge(Edge(2, 3, 1.0, false));
+            nonBipartiteGraph.addEdge(Edge(3, 1, 1.0, false));
+            nonBipartiteGraph.addEdge(Edge(3, 4, 1.0, false));
+            nonBipartiteGraph.addEdge(Edge(4, 5, 1.0, false));
+
+            std::map<int, int> partition2;
+            std::vector<std::pair<int, int>> maxMatching2;
+
+            if (nonBipartiteGraph.isBipartite(partition2)) {
+                std::cout << " Граф двудольный - используем быстрый алгоритм Куна" << std::endl;
+                maxMatching2 = nonBipartiteGraph.findMaximumMatchingBipartite();
+            } else {
+                std::cout << " Граф не двудольный - используем алгоритм Эдмондса" << std::endl;
+                maxMatching2 = nonBipartiteGraph.findMaximumMatching();
+            }
+
+            std::cout << "Наибольшее паросочетание в недвудольном графе (размер = " << maxMatching2.size() << "):" << std::endl;
+            for (const auto& edge : maxMatching2) {
+                std::cout << "  " << edge.first << " -- " << edge.second << std::endl;
+            }
+
+        } catch (const std::exception& e) {
+            std::cerr << "Ошибка: " << e.what() << std::endl;
+        }
+        std::cout << "\n╔════════════════════════════════════════════════════╗" << std::endl;
         std::cout << "║ ПРОГРАММА ЗАВЕРШЕНА                                ║" << std::endl;
         std::cout << "╚════════════════════════════════════════════════════╝" << std::endl;
 

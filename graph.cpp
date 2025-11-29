@@ -418,3 +418,337 @@ bool Graph::isBipartiteDFS(std::map<int, int>& partition) {
     }
 }
 
+std::pair<double, std::vector<std::pair<int, int>>> Graph::solveAssignmentProblem(
+    const std::vector<int>& firstPart,
+    const std::vector<int>& secondPart) {
+
+    try {
+        const double INF = 1e9;
+        int n = firstPart.size();
+
+        if (n != secondPart.size()) {
+            throw std::invalid_argument("Размеры долей должны быть одинаковыми");
+        }
+
+        if (n == 0) {
+            return {0.0, {}};
+        }
+
+        std::vector<std::vector<double>> cost(n, std::vector<double>(n, INF));
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int fromId = firstPart[i];
+                int toId = secondPart[j];
+
+                for (const auto& edge : edges) {
+                    if ((edge.getFromId() == fromId && edge.getToId() == toId) ||
+                        (!edge.getIsDirected() && edge.getFromId() == toId && edge.getToId() == fromId)) {
+                        cost[i][j] = edge.getWeight();
+                        break;
+                    }
+                }
+            }
+        }
+
+        std::vector<double> u(n+1, 0), v(n+1, 0);
+        std::vector<int> p(n+1, 0), way(n+1, 0);
+
+        for (int i = 1; i <= n; i++) {
+            p[0] = i;
+            int j0 = 0;
+            std::vector<double> minv(n+1, INF);
+            std::vector<bool> used(n+1, false);
+
+            do {
+                used[j0] = true;
+                int i0 = p[j0];
+                double delta = INF;
+                int j1 = 0;
+
+                for (int j = 1; j <= n; j++) {
+                    if (!used[j]) {
+                        double cur = cost[i0-1][j-1] - u[i0] - v[j];
+                        if (cur < minv[j]) {
+                            minv[j] = cur;
+                            way[j] = j0;
+                        }
+                        if (minv[j] < delta) {
+                            delta = minv[j];
+                            j1 = j;
+                        }
+                    }
+                }
+
+                for (int j = 0; j <= n; j++) {
+                    if (used[j]) {
+                        u[p[j]] += delta;
+                        v[j] -= delta;
+                    } else {
+                        minv[j] -= delta;
+                    }
+                }
+
+                j0 = j1;
+            } while (p[j0] != 0);
+
+            do {
+                int j1 = way[j0];
+                p[j0] = p[j1];
+                j0 = j1;
+            } while (j0);
+        }
+
+        double totalCost = -v[0];
+        std::vector<std::pair<int, int>> matching;
+
+        for (int j = 1; j <= n; j++) {
+            if (p[j] != 0) {
+                matching.push_back({firstPart[p[j]-1], secondPart[j-1]});
+            }
+        }
+
+        if (totalCost > INF / 2) {
+            throw std::runtime_error("Не удалось найти совершенное паросочетание: возможно, граф не полный");
+        }
+
+        return {totalCost, matching};
+
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка в Венгерском алгоритме: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+std::vector<std::pair<int, int>> Graph::findMaximumMatching() {
+    try {
+        for (const auto& edge : edges) {
+            if (edge.getIsDirected()) {
+                throw std::invalid_argument("Алгоритм Эдмондса работает только с неориентированными графами");
+            }
+        }
+
+        if (vertices.empty()) {
+            return {};
+        }
+
+        std::map<int, int> idToIndex;
+        std::vector<int> indexToId;
+        for (const auto& vertex : vertices) {
+            idToIndex[vertex.getId()] = indexToId.size();
+            indexToId.push_back(vertex.getId());
+        }
+
+        int n = vertices.size();
+
+        std::vector<std::vector<int>> adj(n);
+        for (const auto& edge : edges) {
+            int u = idToIndex[edge.getFromId()];
+            int v = idToIndex[edge.getToId()];
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+
+        std::vector<int> match(n, -1);
+        std::vector<int> parent(n), base(n), color(n);
+
+        auto lca = [&](int a, int b) {
+            std::vector<bool> used(n, false);
+            while (true) {
+                a = base[a];
+                used[a] = true;
+                if (match[a] == -1) break;
+                a = parent[match[a]];
+            }
+            while (true) {
+                b = base[b];
+                if (used[b]) return b;
+                b = parent[match[b]];
+            }
+            return -1;
+        };
+
+        auto mark_path = [&](int v, int b, int children) {
+            while (base[v] != b) {
+                color[base[v]] = color[base[match[v]]] = 1;
+                parent[v] = children;
+                children = match[v];
+                v = parent[match[v]];
+            }
+        };
+
+        auto bfs = [&](int start) -> bool {
+            std::fill(parent.begin(), parent.end(), -1);
+            std::fill(color.begin(), color.end(), 0);
+            for (int i = 0; i < n; i++) base[i] = i;
+
+            std::queue<int> q;
+            q.push(start);
+            color[start] = 1;
+
+            while (!q.empty()) {
+                int u = q.front();
+                q.pop();
+
+                for (int v : adj[u]) {
+                    if (base[u] == base[v] || color[v] == 2) continue;
+
+                    if (color[v] == 0) {
+                        color[v] = 2;
+                        parent[v] = u;
+
+                        if (match[v] == -1) {
+                            while (v != -1) {
+                                int pv = parent[v];
+                                int ppv = match[pv];
+                                match[v] = pv;
+                                match[pv] = v;
+                                v = ppv;
+                            }
+                            return true;
+                        }
+
+                        color[match[v]] = 1;
+                        q.push(match[v]);
+                    } else {
+                        int b = lca(u, v);
+                        mark_path(u, b, v);
+                        mark_path(v, b, u);
+
+                        for (int i = 0; i < n; i++) {
+                            if (color[base[i]] == 1) {
+                                base[i] = b;
+                                if (color[i] == 1) {
+                                    color[i] = 2;
+                                    q.push(i);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        };
+
+        bool improved = true;
+        while (improved) {
+            improved = false;
+            for (int i = 0; i < n; i++) {
+                if (match[i] == -1 && bfs(i)) {
+                    improved = true;
+                }
+            }
+        }
+
+        std::vector<std::pair<int, int>> result;
+        for (int i = 0; i < n; i++) {
+            if (match[i] != -1 && i < match[i]) {
+                result.push_back({indexToId[i], indexToId[match[i]]});
+            }
+        }
+
+        return result;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка в алгоритме Эдмондса: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+std::vector<std::pair<int, int>> Graph::findMaximumMatchingBipartite() {
+    try {
+        std::map<int, int> partition;
+        if (!isBipartite(partition)) {
+            throw std::invalid_argument("Граф не является двудольным");
+        }
+
+        if (vertices.empty()) {
+            return {};
+        }
+
+        std::vector<int> left, right;
+        for (const auto& vertex : vertices) {
+            if (partition[vertex.getId()] == 0) {
+                left.push_back(vertex.getId());
+            } else {
+                right.push_back(vertex.getId());
+            }
+        }
+
+        std::map<int, int> idToIndex;
+        std::vector<int> indexToId;
+        for (const auto& vertex : vertices) {
+            idToIndex[vertex.getId()] = indexToId.size();
+            indexToId.push_back(vertex.getId());
+        }
+
+        int n = vertices.size();
+        int leftSize = left.size();
+
+        std::vector<std::vector<bool>> adj(n, std::vector<bool>(n, false));
+        for (const auto& edge : edges) {
+            int u = idToIndex[edge.getFromId()];
+            int v = idToIndex[edge.getToId()];
+            adj[u][v] = adj[v][u] = true;
+        }
+
+        std::vector<int> match(n, -1);
+
+        for (int u = 0; u < leftSize; u++) {
+            std::vector<bool> used(n, false);
+            std::vector<int> parent(n, -1);
+            std::queue<int> q;
+
+            q.push(u);
+            used[u] = true;
+            bool found = false;
+            int last = -1;
+
+            while (!q.empty() && !found) {
+                int current = q.front();
+                q.pop();
+
+                for (int v = leftSize; v < n; v++) {
+                    if (adj[current][v] && !used[v]) {
+                        used[v] = true;
+                        parent[v] = current;
+
+                        if (match[v] == -1) {
+                            found = true;
+                            last = v;
+                            break;
+                        } else {
+                            q.push(match[v]);
+                            parent[match[v]] = v;
+                            used[match[v]] = true;
+                        }
+                    }
+                }
+            }
+
+            if (found) {
+                int v = last;
+                while (v != -1) {
+                    int p = parent[v];
+                    int next = match[p];
+                    match[v] = p;
+                    match[p] = v;
+                    v = next;
+                }
+            }
+        }
+
+        std::vector<std::pair<int, int>> result;
+        for (int i = 0; i < n; i++) {
+            if (match[i] != -1 && i < match[i]) {
+                result.push_back({indexToId[i], indexToId[match[i]]});
+            }
+        }
+
+        return result;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка в алгоритме Куна: " << e.what() << std::endl;
+        throw;
+    }
+}
