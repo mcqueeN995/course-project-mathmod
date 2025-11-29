@@ -232,3 +232,111 @@ std::istream& operator>>(std::istream& is, Graph& graph) {
         throw;
     }
 }
+
+bool Graph::isBipartite(std::map<int, int>& partition) {
+    try {
+        partition.clear();
+        for (const auto& v : vertices) {
+            partition[v.getId()] = -1;
+        }
+
+        if (vertices.empty()) {
+            std::cout << "Граф пуст. Это двудольный граф." << std::endl;
+            return true;
+        }
+
+        bool isBipartiteGraph = true;
+
+        for (const auto& startVertex : vertices) {
+            int start = startVertex.getId();
+
+            if (partition[start] != -1) {
+                continue;
+            }
+
+            std::queue<int> bfsQueue;
+
+            partition[start] = 0;
+
+            bfsQueue.push(start);
+
+            while (!bfsQueue.empty() && isBipartiteGraph) {
+                int currentVertexId = bfsQueue.front();
+                bfsQueue.pop();
+                int currentPartition = partition[currentVertexId];
+                for (const auto& edge : edges) {
+                    if (edge.getFromId() == currentVertexId) {
+                        int neighborId = edge.getToId();
+                        this->processEdge(currentVertexId, neighborId, currentPartition,
+                                         partition, bfsQueue, isBipartiteGraph);
+                    }
+                    else if (!edge.getIsDirected() && edge.getToId() == currentVertexId) {
+                        int neighborId = edge.getFromId();
+                        this->processEdge(currentVertexId, neighborId, currentPartition,
+                                         partition, bfsQueue, isBipartiteGraph);
+                    }
+                }
+            }
+            if (!isBipartiteGraph) {
+                break;
+            }
+        }
+
+        return isBipartiteGraph;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка при проверке двудольности: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+void Graph::processEdge(int fromId, int toId, int fromPartition,
+                        std::map<int, int>& partition,
+                        std::queue<int>& bfsQueue,
+                        bool& isBipartiteGraph) {
+    if (partition[toId] == -1) {
+        partition[toId] = !fromPartition;
+        bfsQueue.push(toId);
+    }
+    else {
+        if (partition[toId] == partition[fromId]) {
+            std::cerr << "Обнаружено ребро между вершинами одной доли: "
+                      << fromId << " (доля " << partition[fromId] << ") и "
+                      << toId << " (доля " << partition[toId] << ")" << std::endl;
+            isBipartiteGraph = false;
+        }
+    }
+}
+
+void Graph::printBipartiteInfo(const std::map<int, int>& partition) const {
+    try {
+        std::cout << "\n=== ИНФОРМАЦИЯ О ДВУДОЛЬНОСТИ ===" << std::endl;
+
+        std::vector<int> part0, part1;
+
+        for (const auto& [vertexId, partitionId] : partition) {
+            if (partitionId == 0) {
+                part0.push_back(vertexId);
+            } else if (partitionId == 1) {
+                part1.push_back(vertexId);
+            }
+        }
+
+        std::cout << "Доля 0 (" << part0.size() << " вершин): ";
+        for (int id : part0) {
+            std::cout << id << " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "Доля 1 (" << part1.size() << " вершин): ";
+        for (int id : part1) {
+            std::cout << id << " ";
+        }
+        std::cout << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка при выводе информации о двудольности: " << e.what() << std::endl;
+        throw;
+    }
+}
+

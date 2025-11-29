@@ -8,11 +8,18 @@
 #include <fstream>
 #include <stdexcept>
 #include <algorithm>
+#include <queue>
+#include <map>
 
 class Graph {
 private:
     std::vector<Vertex> vertices;
     std::vector<Edge> edges;
+
+    void processEdge(int fromId, int toId, int fromPartition,
+                     std::map<int, int>& partition,
+                     std::queue<int>& bfsQueue,
+                     bool& isBipartiteGraph);
 
 public:
     Graph();
@@ -24,6 +31,8 @@ public:
     int getVertexCount() const;
     int getEdgeCount() const;
     void printGraph() const;
+    bool isBipartite(std::map<int, int>& partition);
+    void printBipartiteInfo(const std::map<int, int>& partition) const;
     friend std::ostream& operator<<(std::ostream& os, const Graph& graph);
     friend std::istream& operator>>(std::istream& is, Graph& graph);
 };
