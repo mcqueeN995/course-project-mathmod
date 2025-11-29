@@ -340,3 +340,81 @@ void Graph::printBipartiteInfo(const std::map<int, int>& partition) const {
     }
 }
 
+bool Graph::dfsHelper(int vertexId, int color, std::map<int, int>& partition) {
+    try {
+        partition[vertexId] = color;
+
+        for (const auto& edge : edges) {
+            int neighborId = -1;
+            bool isNeighbor = false;
+
+            if (edge.getFromId() == vertexId) {
+                neighborId = edge.getToId();
+                isNeighbor = true;
+            }
+            else if (!edge.getIsDirected() && edge.getToId() == vertexId) {
+                neighborId = edge.getFromId();
+                isNeighbor = true;
+            }
+
+            if (isNeighbor) {
+                if (partition[neighborId] == -1) {
+                    int nextColor = 1 - color;
+                    if (!dfsHelper(neighborId, nextColor, partition)) {
+                        return false;
+                    }
+                } else {
+                    if (partition[neighborId] == partition[vertexId]) {
+                        std::cerr << "Обнаружено ребро между вершинами одного цвета: "
+                                  << vertexId << " (цвет " << partition[vertexId] << ") и "
+                                  << neighborId << " (цвет " << partition[neighborId] << ")" << std::endl;
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка в DFS: " << e.what() << std::endl;
+        throw;
+    }
+}
+
+bool Graph::isBipartiteDFS(std::map<int, int>& partition) {
+    try {
+        partition.clear();
+
+        for (const auto& v : vertices) {
+            partition[v.getId()] = -1;
+        }
+
+
+        if (vertices.empty()) {
+            std::cout << "Граф пуст. Это двудольный граф." << std::endl;
+            return true;
+        }
+
+        for (const auto& startVertex : vertices) {
+            int startId = startVertex.getId();
+
+            if (partition[startId] != -1) {
+                continue;
+            }
+
+            std::cout << "Запуск DFS из вершины " << startId << std::endl;
+
+            if (!dfsHelper(startId, 0, partition)) {
+                std::cout << "Граф НЕ двудольный" << std::endl;
+                return false;
+            }
+        }
+
+        std::cout << "Граф успешно окрашен в два цвета" << std::endl;
+        return true;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка при проверке двудольности (DFS): " << e.what() << std::endl;
+        throw;
+    }
+}
+
