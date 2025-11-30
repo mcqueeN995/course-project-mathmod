@@ -1,4 +1,8 @@
 #include "graph.h"
+#include <iomanip>  // Добавляем для std::setw, std::setprecision
+#include <sstream>  // Добавляем для std::istringstream
+#include <limits>
+#include <cmath>
 
 Graph::Graph() : vertices(), edges() {}
 
@@ -122,39 +126,89 @@ int Graph::getEdgeCount() const {
     return edges.size();
 }
 
-void Graph::printGraph() const {
-    std::cout << "\n=== ИНФОРМАЦИЯ О ГРАФЕ ===" << std::endl;
-    std::cout << "Количество вершин: " << vertices.size() << std::endl;
-    std::cout << "Количество рёбер: " << edges.size() << std::endl;
-
-    std::cout << "\nВЕРШИНЫ:" << std::endl;
-    for (const auto& v : vertices) {
-        std::cout << "  " << v << std::endl;
-    }
-
-    std::cout << "\nРЕБРА:" << std::endl;
-    for (const auto& e : edges) {
-        std::cout << "  " << e << std::endl;
-    }
-    std::cout << std::endl;
-}
-
 std::ostream& operator<<(std::ostream& os, const Graph& graph) {
     try {
-        os << graph.vertices.size() << std::endl;
-        for (const auto& v : graph.vertices) {
-            os << v.getId() << " " << v.getLabel() << " " << v.getWeight() << std::endl;
+        if (graph.vertices.empty()) {
+            if (&os == &std::cout || &os == &std::cerr) {
+                os << "Граф пуст - матрица смежности отсутствует" << std::endl;
+            }
+            return os;
         }
 
-        os << graph.edges.size() << std::endl;
+        std::map<int, int> idToIndex;
+        std::vector<int> indexToId;
 
-        for (const auto& e : graph.edges) {
-            os << e.getFromId() << " " << e.getToId() << " "
-               << e.getWeight() << " " << (e.getIsDirected() ? 1 : 0) << std::endl;
+        for (const auto& vertex : graph.vertices) {
+            idToIndex[vertex.getId()] = indexToId.size();
+            indexToId.push_back(vertex.getId());
+        }
+
+        int n = graph.vertices.size();
+
+        std::vector<std::vector<double>> adjMatrix(n, std::vector<double>(n, 0.0));
+
+        for (const auto& edge : graph.edges) {
+            int fromIdx = idToIndex[edge.getFromId()];
+            int toIdx = idToIndex[edge.getToId()];
+
+            if (edge.getIsDirected()) {
+                adjMatrix[fromIdx][toIdx] = edge.getWeight();
+            } else {
+                adjMatrix[fromIdx][toIdx] = edge.getWeight();
+                adjMatrix[toIdx][fromIdx] = edge.getWeight();
+            }
+        }
+
+        bool isConsole = (&os == &std::cout || &os == &std::cerr);
+
+        if (isConsole) {
+            os << "\n" << std::string(50, '=') << std::endl;
+            os << "МАТРИЦА СМЕЖНОСТИ ГРАФА" << std::endl;
+            os << std::string(50, '=') << std::endl;
+
+            os << "     ";
+            for (int i = 0; i < n; i++) {
+                os << std::setw(4) << indexToId[i] << " ";
+            }
+            os << std::endl;
+
+            os << "    ┌";
+            for (int i = 0; i < n; i++) {
+                os << "─────";
+            }
+            os << "┐" << std::endl;
+
+            for (int i = 0; i < n; i++) {
+                os << std::setw(3) << indexToId[i] << " │";
+                for (int j = 0; j < n; j++) {
+                    if (adjMatrix[i][j] == 0.0) {
+                        os << "  ·  ";
+                    } else {
+                        os << std::setw(4) << std::fixed << std::setprecision(1)
+                           << adjMatrix[i][j] << " ";
+                    }
+                }
+                os << "│" << std::endl;
+            }
+
+            os << "    └";
+            for (int i = 0; i < n; i++) {
+                os << "─────";
+            }
+            os << "┘" << std::endl;
+
+        } else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    os << adjMatrix[i][j];
+                    if (j < n - 1) os << " ";
+                }
+                os << std::endl;
+            }
         }
 
         if (!os) {
-            throw std::ios_base::failure("Ошибка при выводе графа в поток");
+            throw std::ios_base::failure("Ошибка при выводе матрицы смежности");
         }
 
         return os;
@@ -163,7 +217,7 @@ std::ostream& operator<<(std::ostream& os, const Graph& graph) {
         std::cerr << "Ошибка ввода/вывода: " << e.what() << std::endl;
         throw;
     } catch (const std::exception& e) {
-        std::cerr << "Неожиданная ошибка при выводе графа: " << e.what() << std::endl;
+        std::cerr << "Неожиданная ошибка при выводе матрицы: " << e.what() << std::endl;
         throw;
     }
 }
@@ -172,62 +226,57 @@ std::istream& operator>>(std::istream& is, Graph& graph) {
     try {
         graph.vertices.clear();
         graph.edges.clear();
+        std::vector<std::vector<double>> matrix;
+        std::string line;
 
-        int vertexCount;
-        if (!(is >> vertexCount)) {
-            throw std::invalid_argument("Не удалось прочитать количество вершин");
-        }
+        while (std::getline(is, line)) {
+            if (line.empty()) continue;
 
-        if (vertexCount < 0) {
-            throw std::invalid_argument("Количество вершин не может быть отрицательным");
-        }
+            std::vector<double> row;
+            std::istringstream iss(line);
+            double value;
 
-        for (int i = 0; i < vertexCount; ++i) {
-            try {
-                Vertex v;
-                is >> v;
-                graph.vertices.push_back(v);
-            } catch (const std::exception& e) {
-                throw std::runtime_error(
-                    "Ошибка при чтении вершины " + std::to_string(i) + ": " + std::string(e.what())
-                );
+            while (iss >> value) {
+                row.push_back(value);
+            }
+
+            if (!row.empty()) {
+                matrix.push_back(row);
             }
         }
 
-        int edgeCount;
-        if (!(is >> edgeCount)) {
-            throw std::invalid_argument("Не удалось прочитать количество рёбер");
+        int n = matrix.size();
+        if (n == 0) {
+            return is;
         }
 
-        if (edgeCount < 0) {
-            throw std::invalid_argument("Количество рёбер не может быть отрицательным");
+        for (const auto& row : matrix) {
+            if (row.size() != n) {
+                throw std::invalid_argument("Матрица смежности должна быть квадратной");
+            }
         }
 
-        for (int i = 0; i < edgeCount; ++i) {
-            try {
-                Edge e;
-                is >> e;
-                graph.edges.push_back(e);
+        for (int i = 1; i <= n; i++) {
+            graph.vertices.push_back(Vertex(i, "V" + std::to_string(i), 1.0));
+        }
 
-            } catch (const std::exception& e) {
-                throw std::runtime_error(
-                    "Ошибка при чтении ребра " + std::to_string(i) + ": " + std::string(e.what())
-                );
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (matrix[i][j] != 0.0) {
+                    bool isDirected = (matrix[i][j] != matrix[j][i]);
+                    graph.edges.push_back(Edge(i + 1, j + 1, matrix[i][j], isDirected));
+                }
             }
         }
 
         return is;
 
     } catch (const std::invalid_argument& e) {
-        std::cerr << "Ошибка при вводе графа: " << e.what() << std::endl;
-        is.setstate(std::ios_base::failbit);
-        throw;
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Ошибка при обработке данных графа: " << e.what() << std::endl;
+        std::cerr << "Ошибка при вводе матрицы: " << e.what() << std::endl;
         is.setstate(std::ios_base::failbit);
         throw;
     } catch (const std::exception& e) {
-        std::cerr << "Неожиданная ошибка при вводе графа: " << e.what() << std::endl;
+        std::cerr << "Неожиданная ошибка при вводе матрицы: " << e.what() << std::endl;
         is.setstate(std::ios_base::failbit);
         throw;
     }

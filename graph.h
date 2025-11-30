@@ -28,15 +28,14 @@ public:
     Vertex* getVertex(int id);
     int getVertexCount() const;
     int getEdgeCount() const;
-    void printGraph() const;
     bool isBipartite(std::map<int, int>& partition);
     bool isBipartiteDFS(std::map<int, int>& partition);
     void printBipartiteInfo(const std::map<int, int>& partition) const;
     std::pair<double, std::vector<std::pair<int, int>>> solveAssignmentProblem(const std::vector<int>& firstPart, const std::vector<int>& secondPart);
+    std::vector<std::pair<int, int>> findMaximumMatching();
+    std::vector<std::pair<int, int>> findMaximumMatchingBipartite();
     friend std::ostream& operator<<(std::ostream& os, const Graph& graph);
     friend std::istream& operator>>(std::istream& is, Graph& graph);
-    std::vector<std::pair<int, int>> findMaximumMatchingBipartite();
-    std::vector<std::pair<int, int>> findMaximumMatching();
 };
 
 #endif // GRAPH_H

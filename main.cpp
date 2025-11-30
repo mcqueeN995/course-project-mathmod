@@ -23,12 +23,12 @@ int main() {
             graph1.addEdge(Edge(3, 4, 2.0, false));
 
             std::cout << "\nГраф:" << std::endl;
-            graph1.printGraph();
+            std::cout << graph1;  // ЗАМЕНА: вместо graph1.printGraph();
 
             std::cout << "Алгоритм: BFS (поиск в ширину)" << std::endl;
             std::map<int, int> partitionBFS1;
             bool isBipartiteBFS1 = graph1.isBipartite(partitionBFS1);
-            std::cout << "Результат: " << (isBipartiteBFS1 ? "ДВУДОЛЬНЫЙ ✓" : "НЕ ДВУДОЛЬНЫЙ ✗") << std::endl;
+            std::cout << "Результат: " << (isBipartiteBFS1 ? "ДВУДОЛЬНЫЙ " : "НЕ ДВУДОЛЬНЫЙ ") << std::endl;
             if (isBipartiteBFS1) {
                 graph1.printBipartiteInfo(partitionBFS1);
             }
@@ -53,12 +53,12 @@ int main() {
             graph2.addEdge(Edge(3, 1, 4.0, false));
 
             std::cout << "\nГраф (треугольник 1-2-3-1):" << std::endl;
-            graph2.printGraph();
+            std::cout << graph2;
 
             std::cout << "Алгоритм: BFS (поиск в ширину)" << std::endl;
             std::map<int, int> partitionBFS2;
             bool isBipartiteBFS2 = graph2.isBipartite(partitionBFS2);
-            std::cout << "Результат: " << (isBipartiteBFS2 ? "ДВУДОЛЬНЫЙ ✓" : "НЕ ДВУДОЛЬНЫЙ ✗") << std::endl;
+            std::cout << "Результат: " << (isBipartiteBFS2 ? "ДВУДОЛЬНЫЙ " : "НЕ ДВУДОЛЬНЫЙ ") << std::endl;
 
         } catch (const std::exception& e) {
             std::cerr << "Ошибка: " << e.what() << std::endl;
@@ -82,12 +82,12 @@ int main() {
             graph3.addEdge(Edge(4, 5, 2.0, false));
 
             std::cout << "\nГраф (две отдельные компоненты):" << std::endl;
-            graph3.printGraph();
+            std::cout << graph3;
 
             std::cout << "Алгоритм: BFS (поиск в ширину)" << std::endl;
             std::map<int, int> partitionBFS3;
             bool isBipartiteBFS3 = graph3.isBipartite(partitionBFS3);
-            std::cout << "Результат: " << (isBipartiteBFS3 ? "ДВУДОЛЬНЫЙ ✓" : "НЕ ДВУДОЛЬНЫЙ ✗") << std::endl;
+            std::cout << "Результат: " << (isBipartiteBFS3 ? "ДВУДОЛЬНЫЙ " : "НЕ ДВУДОЛЬНЫЙ ") << std::endl;
             if (isBipartiteBFS3) {
                 graph3.printBipartiteInfo(partitionBFS3);
             }
@@ -114,12 +114,12 @@ int main() {
             graph4.addEdge(Edge(3, 4, 2.0, false));
 
             std::cout << "\nГраф:" << std::endl;
-            graph4.printGraph();
+            std::cout << graph4;
 
             std::cout << "Алгоритм: DFS (поиск в глубину)" << std::endl;
             std::map<int, int> partitionDFS1;
             bool isBipartiteDFS1 = graph4.isBipartiteDFS(partitionDFS1);
-            std::cout << "Результат: " << (isBipartiteDFS1 ? "ДВУДОЛЬНЫЙ ✓" : "НЕ ДВУДОЛЬНЫЙ ✗") << std::endl;
+            std::cout << "Результат: " << (isBipartiteDFS1 ? "ДВУДОЛЬНЫЙ " : "НЕ ДВУДОЛЬНЫЙ ") << std::endl;
             if (isBipartiteDFS1) {
                 graph4.printBipartiteInfo(partitionDFS1);
             }
@@ -144,12 +144,12 @@ int main() {
             graph5.addEdge(Edge(3, 1, 4.0, false));
 
             std::cout << "\nГраф (треугольник 1-2-3-1):" << std::endl;
-            graph5.printGraph();
+            std::cout << graph5;
 
             std::cout << "Алгоритм: DFS (поиск в глубину)" << std::endl;
             std::map<int, int> partitionDFS2;
             bool isBipartiteDFS2 = graph5.isBipartiteDFS(partitionDFS2);
-            std::cout << "Результат: " << (isBipartiteDFS2 ? "ДВУДОЛЬНЫЙ ✓" : "НЕ ДВУДОЛЬНЫЙ ✗") << std::endl;
+            std::cout << "Результат: " << (isBipartiteDFS2 ? "ДВУДОЛЬНЫЙ " : "НЕ ДВУДОЛЬНЫЙ ") << std::endl;
 
         } catch (const std::exception& e) {
             std::cerr << "Ошибка: " << e.what() << std::endl;
@@ -173,12 +173,12 @@ int main() {
             graph6.addEdge(Edge(4, 5, 2.0, false));
 
             std::cout << "\nГраф (две отдельные компоненты):" << std::endl;
-            graph6.printGraph();
+            std::cout << graph6;
 
             std::cout << "Алгоритм: DFS (поиск в глубину)" << std::endl;
             std::map<int, int> partitionDFS3;
             bool isBipartiteDFS3 = graph6.isBipartiteDFS(partitionDFS3);
-            std::cout << "Результат: " << (isBipartiteDFS3 ? "ДВУДОЛЬНЫЙ ✓" : "НЕ ДВУДОЛЬНЫЙ ✗") << std::endl;
+            std::cout << "Результат: " << (isBipartiteDFS3 ? "ДВУДОЛЬНЫЙ " : "НЕ ДВУДОЛЬНЫЙ ") << std::endl;
             if (isBipartiteDFS3) {
                 graph6.printBipartiteInfo(partitionDFS3);
             }
@@ -186,6 +186,7 @@ int main() {
         } catch (const std::exception& e) {
             std::cerr << "Ошибка: " << e.what() << std::endl;
         }
+
 
         std::cout << "\n╔════════════════════════════════════════════════════╗" << std::endl;
         std::cout << "║ ДЕМОНСТРАЦИЯ 7: Загрузка из файла + BFS            ║" << std::endl;
@@ -221,12 +222,12 @@ int main() {
             inFile.close();
 
             std::cout << "\nЗагруженный граф:" << std::endl;
-            loadedGraph.printGraph();
+            std::cout << loadedGraph;
 
             std::cout << "Алгоритм: BFS (поиск в ширину)" << std::endl;
             std::map<int, int> partitionBFS;
             bool isBipartiteBFS = loadedGraph.isBipartite(partitionBFS);
-            std::cout << "Результат: " << (isBipartiteBFS ? "ДВУДОЛЬНЫЙ ✓" : "НЕ ДВУДОЛЬНЫЙ ✗") << std::endl;
+            std::cout << "Результат: " << (isBipartiteBFS ? "ДВУДОЛЬНЫЙ " : "НЕ ДВУДОЛЬНЫЙ") << std::endl;
             if (isBipartiteBFS) {
                 loadedGraph.printBipartiteInfo(partitionBFS);
             }
@@ -269,12 +270,12 @@ int main() {
             inFile2.close();
 
             std::cout << "\nЗагруженный граф:" << std::endl;
-            loadedGraph2.printGraph();
+            std::cout << loadedGraph2;
 
             std::cout << "Алгоритм: DFS (поиск в глубину)" << std::endl;
             std::map<int, int> partitionDFS;
             bool isBipartiteDFS = loadedGraph2.isBipartiteDFS(partitionDFS);
-            std::cout << "Результат: " << (isBipartiteDFS ? "ДВУДОЛЬНЫЙ ✓" : "НЕ ДВУДОЛЬНЫЙ ✗") << std::endl;
+            std::cout << "Результат: " << (isBipartiteDFS ? "ДВУДОЛЬНЫЙ " : "НЕ ДВУДОЛЬНЫЙ ") << std::endl;
             if (isBipartiteDFS) {
                 loadedGraph2.printBipartiteInfo(partitionDFS);
             }
@@ -284,7 +285,7 @@ int main() {
         }
 
         std::cout << "\n╔════════════════════════════════════════════════════╗" << std::endl;
-        std::cout << "║ ДЕМОНСТРАЦИЯ 9: Венгерский алгоритм                ║" << std::endl;
+        std::cout << "║ ДЕМОНСТРАЦИЯ 9: Венгерский алгоритм               ║" << std::endl;
         std::cout << "╚════════════════════════════════════════════════════╝" << std::endl;
 
         try {
@@ -300,17 +301,15 @@ int main() {
             assignmentGraph.addEdge(Edge(1, 4, 2.0, true));
             assignmentGraph.addEdge(Edge(1, 5, 5.0, true));
             assignmentGraph.addEdge(Edge(1, 6, 1.0, true));
-
             assignmentGraph.addEdge(Edge(2, 4, 4.0, true));
             assignmentGraph.addEdge(Edge(2, 5, 3.0, true));
             assignmentGraph.addEdge(Edge(2, 6, 2.0, true));
-
             assignmentGraph.addEdge(Edge(3, 4, 1.0, true));
             assignmentGraph.addEdge(Edge(3, 5, 2.0, true));
             assignmentGraph.addEdge(Edge(3, 6, 6.0, true));
 
             std::cout << "\nГраф для задачи о назначениях:" << std::endl;
-            assignmentGraph.printGraph();
+            std::cout << assignmentGraph;
 
             std::vector<int> workers = {1, 2, 3};
             std::vector<int> tasks = {4, 5, 6};
@@ -329,7 +328,7 @@ int main() {
         }
 
         std::cout << "\n╔════════════════════════════════════════════════════╗" << std::endl;
-        std::cout << "║ ДЕМОНСТРАЦИЯ 10: Наибольшее паросочетание          ║" << std::endl;
+        std::cout << "║ ДЕМОНСТРАЦИЯ 10: Наибольшее паросочетание        ║" << std::endl;
         std::cout << "╚════════════════════════════════════════════════════╝" << std::endl;
 
         try {
@@ -350,7 +349,7 @@ int main() {
             matchingGraph.addEdge(Edge(5, 6, 1.0, false));
 
             std::cout << "\nГраф для поиска наибольшего паросочетания:" << std::endl;
-            matchingGraph.printGraph();
+            std::cout << matchingGraph;
 
             std::map<int, int> partition;
             std::vector<std::pair<int, int>> maxMatching;
@@ -368,39 +367,10 @@ int main() {
                 std::cout << "  " << edge.first << " -- " << edge.second << std::endl;
             }
 
-
-            std::cout << "\n--- Тест с недвудольным графом ---" << std::endl;
-            Graph nonBipartiteGraph;
-
-            for (int i = 1; i <= 5; i++) {
-                nonBipartiteGraph.addVertex(Vertex(i, "V" + std::to_string(i), 1.0));
-            }
-
-            nonBipartiteGraph.addEdge(Edge(1, 2, 1.0, false));
-            nonBipartiteGraph.addEdge(Edge(2, 3, 1.0, false));
-            nonBipartiteGraph.addEdge(Edge(3, 1, 1.0, false));
-            nonBipartiteGraph.addEdge(Edge(3, 4, 1.0, false));
-            nonBipartiteGraph.addEdge(Edge(4, 5, 1.0, false));
-
-            std::map<int, int> partition2;
-            std::vector<std::pair<int, int>> maxMatching2;
-
-            if (nonBipartiteGraph.isBipartite(partition2)) {
-                std::cout << " Граф двудольный - используем быстрый алгоритм Куна" << std::endl;
-                maxMatching2 = nonBipartiteGraph.findMaximumMatchingBipartite();
-            } else {
-                std::cout << " Граф не двудольный - используем алгоритм Эдмондса" << std::endl;
-                maxMatching2 = nonBipartiteGraph.findMaximumMatching();
-            }
-
-            std::cout << "Наибольшее паросочетание в недвудольном графе (размер = " << maxMatching2.size() << "):" << std::endl;
-            for (const auto& edge : maxMatching2) {
-                std::cout << "  " << edge.first << " -- " << edge.second << std::endl;
-            }
-
         } catch (const std::exception& e) {
             std::cerr << "Ошибка: " << e.what() << std::endl;
         }
+
         std::cout << "\n╔════════════════════════════════════════════════════╗" << std::endl;
         std::cout << "║ ПРОГРАММА ЗАВЕРШЕНА                                ║" << std::endl;
         std::cout << "╚════════════════════════════════════════════════════╝" << std::endl;
